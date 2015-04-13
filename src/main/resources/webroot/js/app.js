@@ -11,52 +11,36 @@ angular.module('myApp', [ 'ngRoute', 'knalli.angular-vertxbus' ]).config(
 					vertxEventBusProvider.enable().useReconnect();
 				} ]);
 
-angular.module('myApp').controller(
-		'MainCtrl',
-		[
-				'$scope',
-				'vertxEventBusService',
-				function($scope, vertxEventBusService) {
-					$scope.main = this;
-					$scope.main.state = 'disconnected';
-					$scope.main.output = '';
-					
-					$scope.$on('vertx-eventbus.system.disconnected', function(
-							event) {
-						$scope.main.state = 'disconnected';
-						console.log('disconnected');
-					});
+angular.module('myApp').controller('MainCtrl',
+		[ '$scope', 'vertxEventBusService', function($scope, vertxEventBusService) {
+			$scope.main = this;
+			$scope.main.state = 'disconnected';
+			$scope.main.output = '';
 
-					$scope.$on('vertx-eventbus.system.connected', function(
-							event) {
-						$scope.main.state = 'connected';
-						console.log('connected');
-					});
-					
-					$scope.main.doRegister = function(){
-						// register Listener
-						registerBusListener(vertxEventBusService, function(
-								message) {
-							$scope.main.output += message + '\r\n';
-						});
-					};
-					
-					$scope.main.doUnregister = function(){
-						// unregister listener
-						unregisterBusListener(vertxEventBusService);
-					};
-					
-					$scope.main.doRegister();
-				} ]);
+			$scope.$on('vertx-eventbus.system.disconnected', function(event) {
+				$scope.main.state = 'disconnected';
+				console.log('disconnected');
+			});
 
-var callback = function(mesagge){
-	console.log('<<<<<<<<<< ', message);
-};
+			$scope.$on('vertx-eventbus.system.connected', function(event) {
+				$scope.main.state = 'connected';
+				console.log('connected');
+			});
 
-function registerBusListener(vertxEventBusService, callback) {
-	vertxEventBusService.on('outbound.test', callback);
-}
+			var callback = function(message) {
+				console.log('<<<<<<<<<< ', message);
+				$scope.main.output += message + '\r\n';
+			};
 
-function unregisterBusListener(vertxEventBusService) {
-	vertxEventBusService.removeListener('outbound.test', callback);
-}
+			$scope.main.doRegister = function() {
+				// register Listener
+				vertxEventBusService.on('outbound.test', callback);
+			};
+
+			$scope.main.doUnregister = function() {
+				// unregister listener
+				vertxEventBusService.removeListener('outbound.test', callback);
+			};
+
+			$scope.main.doRegister();
+		} ]);
